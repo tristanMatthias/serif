@@ -1,0 +1,48 @@
+name: Bug report
+description: Something rendered wrong or the tool misbehaved
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for taking the time to file a bug! Please fill in the details below.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you expect, and what did you get instead?
+      placeholder: The blockquote rendered without its left border…
+    validations:
+      required: true
+
+  - type: textarea
+    id: markdown
+    attributes:
+      label: Minimal Markdown to reproduce
+      description: The smallest input that shows the problem. This will be rendered as code.
+      render: markdown
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: serif version
+      description: Output of `serif --version`
+      placeholder: serif v0.1.0
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: OS / browser
+      placeholder: macOS 15 / Safari 18
+    validations:
+      required: false
+
+  - type: textarea
+    id: screenshot
+    attributes:
+      label: Screenshot (optional)
+      description: Drag an image of the rendered output here.

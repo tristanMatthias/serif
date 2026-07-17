@@ -1,0 +1,90 @@
+# GoReleaser configuration — https://goreleaser.com
+# Cut a release by pushing a tag:  git tag v0.1.0 && git push origin v0.1.0
+version: 2
+
+project_name: serif
+
+before:
+  hooks:
+    - go mod tidy
+    - go test ./...
+
+builds:
+  - id: serif
+    main: .
+    binary: serif
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w -X main.version={{ .Version }}
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ignore:
+      - goos: windows
+        goarch: arm64
+
+archives:
+  - id: serif
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    formats: [tar.gz]
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+    files:
+      - README.md
+      - LICENSE
+
+checksum:
+  name_template: checksums.txt
+
+snapshot:
+  version_template: "{{ incpatch .Version }}-next"
+
+changelog:
+  sort: asc
+  use: github
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+      - "^ci:"
+      - Merge pull request
+      - Merge branch
+
+homebrew_casks:
+  - name: serif
+    repository:
+      owner: tristanMatthias
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
+    homepage: "https://github.com/tristanMatthias/serif"
+    description: "Turn Markdown into a beautifully typeset HTML page"
+    commit_author:
+      name: goreleaser-bot
+      email: bot@goreleaser.com
+    # Clear the Gatekeeper quarantine flag so the CLI runs without a prompt.
+    # (Proper signing/notarization would be preferable for a signed release.)
+    hooks:
+      post:
+        install: |
+          if OS.mac?
+            system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/serif"]
+          end
+
+release:
+  github:
+    owner: tristanMatthias
+    name: serif
+  draft: false
+  prerelease: auto
+  footer: |
+    ---
+    Built with [GoReleaser](https://goreleaser.com).

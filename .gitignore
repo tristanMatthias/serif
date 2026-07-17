@@ -1,0 +1,21 @@
+# Binaries
+/serif
+/dist/
+*.exe
+*.test
+*.out
+
+# Generated output (keep the source .md, not the rendered .html)
+/examples/*.html
+*.html
+!assets/**
+
+# Go
+/vendor/
+coverage.txt
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp

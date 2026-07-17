@@ -1,0 +1,542 @@
+/* ==========================================================================
+   serif — typography-first stylesheet
+   Goals: maximum readability, comfortable long-form reading, calm color.
+   https://github.com/tristanMatthias/serif
+   ========================================================================== */
+
+/* ---- Theme tokens -------------------------------------------------------- */
+
+:root {
+  color-scheme: light dark;
+
+  /* Type */
+  --font-serif: "Charter", "Iowan Old Style", "Palatino Linotype", "Palatino",
+    "Book Antiqua", Georgia, "Times New Roman", serif;
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
+  --font-mono: "SF Mono", "JetBrains Mono", "Fira Code", ui-monospace,
+    "Menlo", "Consolas", "Liberation Mono", monospace;
+
+  /* Light theme — warm paper, calm blue accent */
+  --bg: #fbfaf8;
+  --surface: #f3f0ea;
+  --surface-2: #ece8df;
+  --text: #22201d;
+  --muted: #6b655d;
+  --border: #e6e1d7;
+  --accent: #1a56c4;
+  --accent-strong: #103e94;
+  --quote-bar: #d8d2c6;
+  --mark: #fbe6a2;
+  --selection: rgba(26, 86, 196, 0.18);
+  --shadow: 0 1px 2px rgba(30, 25, 18, 0.05);
+}
+
+html[data-theme="dark"] {
+  --bg: #171614;
+  --surface: #201e1b;
+  --surface-2: #292722;
+  --text: #e7e3db;
+  --muted: #9d968a;
+  --border: #322f2a;
+  --accent: #82b1ff;
+  --accent-strong: #adceff;
+  --quote-bar: #3a362f;
+  --mark: #5b4f28;
+  --selection: rgba(130, 177, 255, 0.22);
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+/* No-JS fallback: follow the OS preference when no explicit theme is set. */
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme]) {
+    --bg: #171614;
+    --surface: #201e1b;
+    --surface-2: #292722;
+    --text: #e7e3db;
+    --muted: #9d968a;
+    --border: #322f2a;
+    --accent: #82b1ff;
+    --accent-strong: #adceff;
+    --quote-bar: #3a362f;
+    --mark: #5b4f28;
+    --selection: rgba(130, 177, 255, 0.22);
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  }
+}
+
+/* ---- Base ---------------------------------------------------------------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-serif);
+  font-size: clamp(18px, 1.02rem + 0.35vw, 21px);
+  line-height: 1.72;
+  font-weight: 400;
+  font-kerning: normal;
+  font-variant-ligatures: common-ligatures contextual;
+  font-variant-numeric: oldstyle-nums proportional-nums;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  hanging-punctuation: first allow-end last;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+::selection {
+  background: var(--selection);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
+/* ---- Layout -------------------------------------------------------------- */
+
+.page {
+  width: 100%;
+  max-width: 46rem;
+  margin-inline: auto;
+  padding: clamp(1.75rem, 3vw + 1rem, 4.5rem) clamp(1.15rem, 5vw, 2.75rem)
+    clamp(4rem, 8vw, 7rem);
+}
+
+.prose {
+  overflow-wrap: break-word;
+}
+
+.prose > *:first-child {
+  margin-top: 0;
+}
+
+/* ---- Headings ------------------------------------------------------------ */
+
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6 {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--text);
+  scroll-margin-top: 1.5rem;
+  text-wrap: balance;
+}
+
+.prose h1 {
+  font-size: clamp(2.05rem, 1.5rem + 2.4vw, 3rem);
+  line-height: 1.08;
+  letter-spacing: -0.021em;
+  font-weight: 760;
+  margin: 0 0 0.6em;
+}
+
+.prose h2 {
+  font-size: clamp(1.5rem, 1.25rem + 1vw, 1.95rem);
+  letter-spacing: -0.013em;
+  margin: 2.4em 0 0.7em;
+  padding-bottom: 0.28em;
+  border-bottom: 1px solid var(--border);
+}
+
+.prose h3 {
+  font-size: clamp(1.25rem, 1.1rem + 0.6vw, 1.5rem);
+  letter-spacing: -0.008em;
+  margin: 2em 0 0.55em;
+}
+
+.prose h4 {
+  font-size: 1.15rem;
+  margin: 1.7em 0 0.5em;
+}
+
+.prose h5 {
+  font-size: 1rem;
+  margin: 1.6em 0 0.5em;
+}
+
+.prose h6 {
+  font-size: 0.9rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 1.6em 0 0.5em;
+}
+
+/* Clickable heading anchors (added by JS) */
+.prose :is(h2, h3, h4) .anchor {
+  opacity: 0;
+  margin-left: 0.4em;
+  color: var(--muted);
+  font-weight: 400;
+  text-decoration: none;
+  transition: opacity 0.15s ease, color 0.15s ease;
+}
+
+.prose :is(h2, h3, h4):hover .anchor {
+  opacity: 0.45;
+}
+
+.prose .anchor:hover {
+  opacity: 1;
+  color: var(--accent);
+}
+
+/* ---- Text ---------------------------------------------------------------- */
+
+.prose p {
+  margin: 0 0 1.3em;
+  text-wrap: pretty;
+}
+
+.prose a {
+  color: var(--accent);
+  text-decoration-line: underline;
+  text-decoration-thickness: 0.06em;
+  text-underline-offset: 0.18em;
+  text-decoration-color: color-mix(in srgb, var(--accent) 38%, transparent);
+  transition: color 0.15s ease, text-decoration-color 0.15s ease;
+}
+
+.prose a:hover {
+  color: var(--accent-strong);
+  text-decoration-color: currentColor;
+}
+
+.prose strong {
+  font-weight: 700;
+}
+
+.prose em {
+  font-style: italic;
+}
+
+.prose mark {
+  background: var(--mark);
+  color: inherit;
+  padding: 0.05em 0.2em;
+  border-radius: 0.2em;
+}
+
+.prose abbr[title] {
+  text-decoration: underline dotted;
+  cursor: help;
+}
+
+.prose small {
+  font-size: 0.85em;
+  color: var(--muted);
+}
+
+/* ---- Lists --------------------------------------------------------------- */
+
+.prose ul,
+.prose ol {
+  margin: 0 0 1.3em;
+  padding-left: 1.45em;
+}
+
+.prose li {
+  margin: 0.35em 0;
+}
+
+.prose li::marker {
+  color: var(--muted);
+}
+
+.prose li > ul,
+.prose li > ol {
+  margin: 0.35em 0;
+}
+
+/* Task lists (GFM) */
+.prose ul:has(> li > input[type="checkbox"]),
+.prose li:has(> input[type="checkbox"]) {
+  list-style: none;
+}
+
+.prose li > input[type="checkbox"] {
+  margin: 0 0.5em 0 -1.45em;
+  vertical-align: middle;
+  accent-color: var(--accent);
+}
+
+.prose dl {
+  margin: 0 0 1.3em;
+}
+
+.prose dt {
+  font-weight: 700;
+  font-family: var(--font-sans);
+}
+
+.prose dd {
+  margin: 0 0 0.7em 1.4em;
+  color: var(--muted);
+}
+
+/* ---- Blockquote ---------------------------------------------------------- */
+
+.prose blockquote {
+  margin: 1.6em 0;
+  padding: 0.2em 0 0.2em 1.15em;
+  border-left: 3px solid var(--quote-bar);
+  color: var(--muted);
+  font-style: normal;
+}
+
+.prose blockquote p:last-child {
+  margin-bottom: 0;
+}
+
+.prose blockquote blockquote {
+  margin: 0.8em 0;
+}
+
+/* ---- Code ---------------------------------------------------------------- */
+
+.prose code {
+  font-family: var(--font-mono);
+  font-size: 0.86em;
+  font-variant-ligatures: none;
+  background: var(--surface);
+  padding: 0.15em 0.4em;
+  border-radius: 0.35em;
+  border: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+}
+
+.prose pre {
+  margin: 1.6em 0;
+  padding: 1em 1.15em;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.65em;
+  overflow-x: auto;
+  font-size: 0.86em;
+  line-height: 1.62;
+  tab-size: 4;
+  box-shadow: var(--shadow);
+  -webkit-overflow-scrolling: touch;
+}
+
+.prose pre code {
+  background: none;
+  border: 0;
+  padding: 0;
+  font-size: inherit;
+  border-radius: 0;
+}
+
+/* chroma wrapper */
+.prose .chroma {
+  background: none;
+}
+
+/* ---- Tables -------------------------------------------------------------- */
+
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.8em 0;
+  font-size: 0.94em;
+  font-variant-numeric: lining-nums tabular-nums;
+  display: block;
+  overflow-x: auto;
+}
+
+.prose th,
+.prose td {
+  padding: 0.5em 0.85em;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.prose thead th {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  border-bottom: 2px solid var(--border);
+}
+
+.prose tbody tr:nth-child(even) {
+  background: color-mix(in srgb, var(--surface) 55%, transparent);
+}
+
+/* ---- Media & rules ------------------------------------------------------- */
+
+.prose img,
+.prose video,
+.prose svg {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 1.8em auto;
+  border-radius: 0.5em;
+}
+
+.prose figure {
+  margin: 1.8em 0;
+}
+
+.prose figcaption {
+  font-family: var(--font-sans);
+  font-size: 0.85em;
+  color: var(--muted);
+  text-align: center;
+  margin-top: 0.6em;
+}
+
+.prose hr {
+  border: 0;
+  height: 1px;
+  background: var(--border);
+  margin: 3em 0;
+}
+
+/* ---- Footnotes ----------------------------------------------------------- */
+
+.prose .footnotes {
+  margin-top: 3.5em;
+  padding-top: 1.2em;
+  border-top: 1px solid var(--border);
+  font-size: 0.9em;
+  color: var(--muted);
+}
+
+.prose .footnotes ol {
+  padding-left: 1.2em;
+}
+
+/* ---- Theme toggle -------------------------------------------------------- */
+
+.theme-toggle {
+  position: fixed;
+  top: max(1rem, env(safe-area-inset-top));
+  right: max(1rem, env(safe-area-inset-right));
+  z-index: 10;
+  width: 2.5rem;
+  height: 2.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg) 78%, transparent);
+  color: var(--muted);
+  cursor: pointer;
+  -webkit-backdrop-filter: blur(8px) saturate(1.2);
+  backdrop-filter: blur(8px) saturate(1.2);
+  box-shadow: var(--shadow);
+  transition: color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.theme-toggle:hover {
+  color: var(--text);
+  border-color: var(--muted);
+}
+
+.theme-toggle:active {
+  transform: scale(0.94);
+}
+
+.theme-toggle svg {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+.theme-toggle .icon-sun {
+  display: none;
+}
+.theme-toggle .icon-moon {
+  display: inline-flex;
+}
+html[data-theme="dark"] .theme-toggle .icon-sun {
+  display: inline-flex;
+}
+html[data-theme="dark"] .theme-toggle .icon-moon {
+  display: none;
+}
+
+/* ---- Footer -------------------------------------------------------------- */
+
+.page-footer {
+  margin-top: 4rem;
+  padding-top: 1.4rem;
+  border-top: 1px solid var(--border);
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.page-footer a {
+  color: inherit;
+}
+
+/* ---- Motion & print ------------------------------------------------------ */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+@media print {
+  .theme-toggle {
+    display: none;
+  }
+  body {
+    background: #fff;
+    color: #000;
+    font-size: 11.5pt;
+  }
+  .page {
+    max-width: none;
+    padding: 0;
+  }
+  .prose a {
+    color: #000;
+    text-decoration-color: #666;
+  }
+  .prose pre,
+  .prose code {
+    background: #f5f5f5;
+    border-color: #ddd;
+  }
+  .prose h2 {
+    border-bottom-color: #ccc;
+  }
+  .prose h1,
+  .prose h2,
+  .prose h3,
+  .prose h4 {
+    break-after: avoid;
+  }
+  .prose pre,
+  .prose blockquote,
+  .prose table,
+  .prose figure {
+    break-inside: avoid;
+  }
+}
