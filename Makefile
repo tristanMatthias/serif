@@ -2,7 +2,7 @@ BINARY  := serif
 VERSION := $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
 LDFLAGS := -s -w -X main.version=$(VERSION)
 
-.PHONY: help build install test race vet fmt fmt-check lint example clean
+.PHONY: help build install test race vet fmt fmt-check lint example wasm serve clean
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
@@ -10,6 +10,14 @@ help: ## Show this help
 
 build: ## Build the ./serif binary
 	go build -ldflags "$(LDFLAGS)" -o $(BINARY) .
+
+wasm: ## Build the browser bundle into ./web (serif.wasm + wasm_exec.js)
+	GOOS=js GOARCH=wasm go build -ldflags "$(LDFLAGS)" -o web/serif.wasm ./wasm
+	cp "$$(go env GOROOT)/lib/wasm/wasm_exec.js" web/wasm_exec.js
+
+serve: wasm ## Build the bundle and serve ./web at http://localhost:8080
+	@echo "serving ./web on http://localhost:8080 (Ctrl-C to stop)"
+	go run ./cmd/serve
 
 install: ## Install to $(GOPATH)/bin
 	go install -ldflags "$(LDFLAGS)" .

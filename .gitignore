@@ -9,6 +9,11 @@
 /examples/*.html
 *.html
 !assets/**
+!web/index.html
+
+# WebAssembly build artifacts (built by `make wasm`)
+/web/serif.wasm
+/web/wasm_exec.js
 
 # Go
 /vendor/
