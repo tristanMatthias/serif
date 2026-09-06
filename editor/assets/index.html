@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>{{.Name}} — serif</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext x='16' y='25' text-anchor='middle' font-family='Georgia,serif' font-size='26' fill='%231a56c4'%3ES%3C/text%3E%3C/svg%3E">
+<script>
+{{.ThemeInit}}</script>
+<!-- The document stylesheet, straight from the render package: what you edit is
+     typeset exactly like what serif exports. -->
+<link rel="stylesheet" href="/serif.css">
+<link rel="stylesheet" href="/assets/editor.css">
+</head>
+<body>
+
+<header class="bar">
+  <button class="bar-tree-toggle" id="tree-toggle" type="button" hidden
+          aria-controls="tree" aria-expanded="false" aria-label="Toggle the file tree">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <rect x="1.75" y="2.75" width="12.5" height="10.5" rx="1.6"></rect>
+      <path d="M6.25 2.75v10.5"></path>
+    </svg>
+  </button>
+  <button class="bar-name" id="doc-name" type="button" hidden></button>
+  <span class="bar-link" id="link" data-link="connecting" aria-hidden="true"></span>
+  <span class="bar-status" id="status" data-state="saved">
+    <svg class="status-check" viewBox="0 0 16 16" fill="none" stroke="currentColor"
+         stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M3 8.6l3.3 3.2L13 4.8"></path>
+    </svg>
+    <span class="status-spinner" aria-hidden="true"></span>
+    <span class="status-text" id="status-text" role="status" aria-live="polite"></span>
+  </span>
+  <span class="bar-count" id="count"></span>
+  {{.ThemeToggle}}
+</header>
+
+<div class="notice" id="notice" hidden>
+  <span class="notice-text" id="notice-text"></span>
+  <button class="notice-btn" id="notice-secondary" type="button" hidden></button>
+  <button class="notice-btn accent" id="notice-primary" type="button" hidden></button>
+</div>
+
+<div class="body">
+  <nav class="tree" id="tree" aria-label="Files" hidden>
+    <div class="tree-head">
+      <span class="tree-name" id="tree-name"></span>
+      <button class="tree-new" id="tree-new" type="button" aria-label="New file">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" aria-hidden="true">
+          <path d="M8 3.4v9.2M3.4 8h9.2"></path>
+        </svg>
+      </button>
+    </div>
+    <div id="tree-root"></div>
+  </nav>
+
+  <main class="sheet">
+    <div class="page">
+      <div id="doc" class="prose editor" contenteditable="true" spellcheck="true"
+           role="textbox" aria-multiline="true" aria-label="Document"></div>
+    </div>
+  </main>
+</div>
+
+<div class="picker" id="picker" hidden>
+  <div class="picker-panel" role="dialog" aria-modal="true" aria-label="Open a file">
+    <input class="picker-input" id="picker-input" type="text" role="combobox"
+           placeholder="Search files…" autocomplete="off" spellcheck="false" aria-controls="picker-list">
+    <ul class="picker-list" id="picker-list" role="listbox" aria-label="Files"></ul>
+    <p class="picker-empty" id="picker-empty" hidden>No matching files</p>
+  </div>
+</div>
+
+<div class="prompt" id="prompt" hidden>
+  <form class="prompt-panel" id="prompt-form" role="dialog" aria-modal="true"
+        aria-labelledby="prompt-title">
+    <h2 class="prompt-title" id="prompt-title"></h2>
+    <input class="prompt-input" id="prompt-input" type="text" autocomplete="off"
+           spellcheck="false" aria-describedby="prompt-hint">
+    <p class="prompt-hint" id="prompt-hint" role="status" aria-live="polite"></p>
+    <div class="prompt-actions">
+      <button class="notice-btn" id="prompt-cancel" type="button">Cancel</button>
+      <button class="notice-btn accent" id="prompt-ok" type="submit"></button>
+    </div>
+  </form>
+</div>
+
+<script>
+{{.ThemeJS}}
+</script>
+<script type="module" src="/assets/editor.js"></script>
+</body>
+</html>

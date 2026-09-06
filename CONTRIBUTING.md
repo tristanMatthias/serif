@@ -14,7 +14,11 @@ make lint       # go vet + gofmt check
 make help       # list all targets
 ```
 
-Requires Go 1.25 or newer.
+Requires Go 1.25 or newer. Working on the browser editor needs a little more —
+see below.
+
+Coding agents: read [CLAUDE.md](CLAUDE.md) first. It carries the architecture
+and the invariants that are easy to break without noticing.
 
 ## Making changes
 
@@ -26,6 +30,30 @@ Requires Go 1.25 or newer.
    make example && open examples/showcase.html
    ```
 5. Update `CHANGELOG.md` under `## [Unreleased]`.
+
+## The browser editor
+
+`serif edit` is a Go server (`editor/`) around a small browser app
+(`editor/assets/`), and it shares one renderer and one stylesheet with the
+exporter — so a change in `render/` shows up in both.
+
+```sh
+make edit FILE=notes.md   # or a directory
+make test-ui              # the editor's browser tests
+```
+
+Two things catch most people out:
+
+- The browser assets are embedded in the binary. Editing `editor/assets/*` has
+  no effect until you rebuild; `make edit` and `make test-ui` do that for you.
+- Behaviour that lives in the browser — where the caret lands, what a key does,
+  whether a document survives a round trip — is checked by driving a real
+  Chromium, not from Go. Add a case as a row of data in `editor/uitest/`; see
+  its [README](editor/uitest/README.md). CI runs these, and they need Node:
+
+  ```sh
+  npm install --no-save playwright-core && npx --yes playwright install chromium
+  ```
 
 ## Commit messages
 

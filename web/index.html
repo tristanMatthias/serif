@@ -258,7 +258,7 @@ html[data-theme="dark"] .btn.accent { color: #10131a; }
     </svg>
     <span class="primary">Drop a <code>.md</code> file, or <span class="link">browse</span></span>
     <span class="hint">Nothing is uploaded — rendering runs locally via WebAssembly.</span>
-    <input type="file" id="file-input" accept=".md,.markdown,.mdown,.mkd,.mkdn,.text,.txt,text/markdown,text/plain" hidden>
+    <input type="file" id="file-input" accept=".md,.mdx,.markdown,.mdown,.mkd,.mkdn,.text,.txt,text/markdown,text/plain" hidden>
   </label>
 
   <p class="status" id="status">Loading renderer…</p>
@@ -333,7 +333,7 @@ html[data-theme="dark"] .btn.accent { color: #10131a; }
 
   /* ---- File handling ---- */
   function outName(inName) {
-    return inName.replace(/\.(md|markdown|mdown|mkd|mkdn|text|txt)$/i, "") + ".html";
+    return inName.replace(/\.(md|mdx|markdown|mdown|mkd|mkdn|text|txt)$/i, "") + ".html";
   }
 
   function render(text, name) {

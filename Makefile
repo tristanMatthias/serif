@@ -2,7 +2,7 @@ BINARY  := serif
 VERSION := $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
 LDFLAGS := -s -w -X main.version=$(VERSION)
 
-.PHONY: help build install test race vet fmt fmt-check lint example wasm serve clean
+.PHONY: help build install test test-ui race vet fmt fmt-check lint example wasm serve edit clean
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
@@ -19,11 +19,18 @@ serve: wasm ## Build the bundle and serve ./web at http://localhost:8080
 	@echo "serving ./web on http://localhost:8080 (Ctrl-C to stop)"
 	go run ./cmd/serve
 
+edit: build ## Edit a Markdown file in the browser (make edit FILE=notes.md)
+	@test -n "$(FILE)" || { echo "usage: make edit FILE=notes.md"; exit 1; }
+	./$(BINARY) edit "$(FILE)" --open
+
 install: ## Install to $(GOPATH)/bin
 	go install -ldflags "$(LDFLAGS)" .
 
 test: ## Run tests
 	go test ./...
+
+test-ui: ## Run the editor's browser tests (needs Node + playwright-core)
+	node editor/uitest/run.mjs
 
 race: ## Run tests with the race detector
 	go test -race ./...

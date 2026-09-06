@@ -1,0 +1,700 @@
+/* ==========================================================================
+   serif edit — chrome only.
+   The typography, the palette, the light/dark tokens and the theme toggle all
+   come from serif's own stylesheet (served at /serif.css, straight out of
+   render.StyleCSS). Nothing here restates a colour or a type rule: this file
+   adds the meta layer around the page — the title bar, save status, and the
+   affordances that only make sense while editing.
+   ========================================================================== */
+
+/* ---- Added tokens -------------------------------------------------------- */
+/* serif's palette has no "all is well" colour, because a document never needs
+   one. The editor does. Muted enough to sit in a warm palette without shouting,
+   and defined for both themes the same way serif defines everything else. */
+
+:root {
+  --ok: #2f8546;
+}
+
+html[data-theme="dark"] {
+  --ok: #62c489;
+}
+
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme]) {
+    --ok: #62c489;
+  }
+}
+
+/* ---- Shell --------------------------------------------------------------- */
+
+/* The shell is exactly the viewport, so the tree and the document each scroll
+   on their own rather than the whole page moving under the title bar. */
+body {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+/* The tree and the sheet share the space under the bar. */
+.body {
+  position: relative;
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+.sheet {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  cursor: text;
+  overflow-y: auto;
+}
+
+/* .page is serif's reading column — same measure and padding as an exported
+   document, so the text sits exactly where it will after export. */
+.sheet .page {
+  flex: 1;
+  padding-top: clamp(1.5rem, 2.5vw + 1rem, 3.5rem);
+}
+
+/* ---- File tree ----------------------------------------------------------- */
+
+.tree {
+  flex: none;
+  width: 15rem;
+  border-right: 1px solid var(--border);
+  padding: 0.7rem 0.5rem 3rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  font-family: var(--font-sans);
+  font-size: 0.83rem;
+  line-height: 1.5;
+}
+
+.tree[hidden] { display: none; }
+
+/* The workspace, named once, with the one thing you can do to it as a whole. */
+.tree-head {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.1rem 0.25rem 0.55rem 0.4rem;
+}
+
+.tree-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.tree-new {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  padding: 0;
+  border: 0;
+  border-radius: 0.35em;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.tree-new:hover { background: var(--surface-2); color: var(--text); }
+.tree-new svg { width: 0.9rem; height: 0.9rem; }
+
+.tree-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Each level steps in by one chevron's width, so names line up under names. */
+.tree-list .tree-list {
+  padding-left: 0.85rem;
+}
+
+.tree-row {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  width: 100%;
+  padding: 0.22rem 0.4rem;
+  border: 0;
+  border-radius: 0.35em;
+  background: none;
+  font: inherit;
+  color: var(--muted);
+  text-align: left;
+  cursor: pointer;
+  user-select: none;
+}
+
+.tree-row:hover { background: var(--surface); color: var(--text); }
+
+.tree-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* A file has no chevron, so it is inset to match one. */
+.tree-file { padding-left: 1.3rem; }
+
+.tree-file.is-current {
+  background: var(--surface-2);
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* Renaming is a second action on a row that is already a button, so it sits
+   over the end of the row rather than inside it — and the label makes way for
+   it, so a long name is shortened rather than written underneath. */
+.tree-item { position: relative; }
+
+.tree-action {
+  position: absolute;
+  top: 50%;
+  right: 0.2rem;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  padding: 0;
+  border: 0;
+  border-radius: 0.3em;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.12s ease, background-color 0.15s ease, color 0.15s ease;
+}
+
+.tree-item:hover .tree-action,
+.tree-item:focus-within .tree-action { opacity: 1; }
+.tree-action:hover { background: var(--surface-2); color: var(--text); }
+.tree-action svg { width: 0.78rem; height: 0.78rem; }
+
+.tree-item:hover .tree-file,
+.tree-item:focus-within .tree-file { padding-right: 1.6rem; }
+
+.tree-chevron {
+  flex: none;
+  width: 0.65rem;
+  height: 0.65rem;
+  opacity: 0.7;
+  transition: transform 0.15s ease;
+}
+
+.tree-folder[open] > .tree-row > .tree-chevron { transform: rotate(90deg); }
+
+/* The default disclosure triangle would sit alongside our own chevron. */
+summary.tree-row { list-style: none; }
+summary.tree-row::-webkit-details-marker { display: none; }
+
+/* Narrow windows: the tree covers the text rather than squeezing it. */
+@media (max-width: 52rem) {
+  .tree {
+    position: absolute;
+    inset: 0 auto 0 0;
+    z-index: 15;
+    width: min(16rem, 78vw);
+    background: var(--bg);
+    box-shadow: 0 0 40px color-mix(in srgb, var(--text) 16%, transparent);
+  }
+}
+
+/* ---- Title bar ----------------------------------------------------------- */
+
+.bar {
+  flex: none;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem clamp(0.9rem, 3vw, 1.4rem);
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg) 86%, transparent);
+  -webkit-backdrop-filter: blur(8px) saturate(1.2);
+  backdrop-filter: blur(8px) saturate(1.2);
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.bar-tree-toggle {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  margin-left: -0.35rem;
+  padding: 0;
+  border: 0;
+  border-radius: 0.4em;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.bar-tree-toggle[hidden] { display: none; }
+.bar-tree-toggle:hover { background: var(--surface-2); color: var(--text); }
+.bar-tree-toggle[aria-expanded="true"] { color: var(--text); }
+.bar-tree-toggle svg { width: 0.95rem; height: 0.95rem; }
+
+.bar-name {
+  font: inherit;
+  font-weight: 600;
+  color: var(--text);
+  background: none;
+  border: 0;
+  border-radius: 0.4em;
+  padding: 0.15rem 0.4rem;
+  margin-left: -0.4rem;
+  max-width: 45%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.bar-name:disabled {
+  cursor: default;
+  padding-left: 0;
+  margin-left: 0;
+}
+
+.bar-name:not(:disabled):hover {
+  background: var(--surface-2);
+}
+
+.bar-name:not(:disabled)::after {
+  content: "";
+  display: inline-block;
+  width: 0.34em;
+  height: 0.34em;
+  margin: 0 0.1em 0.15em 0.5em;
+  border-right: 1.5px solid var(--muted);
+  border-bottom: 1.5px solid var(--muted);
+  transform: rotate(45deg);
+  vertical-align: middle;
+}
+
+/* Connection to the server: online is quiet, offline is not. */
+.bar-link {
+  flex: none;
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 999px;
+  background: var(--muted);
+  opacity: 0.4;
+  transition: background-color 0.2s ease, opacity 0.2s ease;
+}
+
+.bar-link[data-link="connecting"] { animation: pulse 1.2s ease-in-out infinite; }
+
+.bar-link[data-link="online"] {
+  background: var(--ok);
+  opacity: 0.9;
+}
+
+.bar-link[data-link="offline"] {
+  background: var(--accent-strong);
+  opacity: 1;
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+.bar-status {
+  flex: 1;
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.status-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.status-check,
+.status-spinner {
+  display: none;
+  flex: none;
+  width: 0.85em;
+  height: 0.85em;
+}
+
+/* The check stays in the text colour: green is reserved for the connection dot,
+   so the one coloured thing in the bar means exactly one thing. */
+.bar-status[data-state="saved"] .status-check {
+  display: block;
+}
+
+.bar-status[data-state="saving"] .status-spinner {
+  display: block;
+  border: 1.5px solid color-mix(in srgb, var(--muted) 30%, transparent);
+  border-top-color: var(--muted);
+  border-radius: 999px;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.bar-status[data-state="error"] { color: var(--accent-strong); }
+
+@keyframes pulse { 50% { opacity: 0.2; } }
+
+.bar-count {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* serif pins the toggle to the viewport corner; in the editor it belongs in
+   the bar, so only its placement is overridden. */
+.bar .theme-toggle {
+  position: static;
+  width: 1.9rem;
+  height: 1.9rem;
+  flex: none;
+  background: none;
+  border-color: transparent;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.bar .theme-toggle svg { width: 1rem; height: 1rem; }
+
+@media (max-width: 30rem) {
+  .bar-count { display: none; }
+}
+
+/* ---- Conflict notice ----------------------------------------------------- */
+
+.notice {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem clamp(0.9rem, 3vw, 1.4rem);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+}
+
+.notice[hidden] { display: none; }
+.notice-text { flex: 1; min-width: 0; color: var(--text); }
+
+.notice-btn {
+  font: inherit;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.25rem 0.75rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.notice-btn:hover { border-color: var(--muted); }
+.notice-btn.accent { color: var(--bg); background: var(--accent); border-color: var(--accent); }
+.notice-btn.accent:hover { background: var(--accent-strong); border-color: var(--accent-strong); }
+
+/* ---- Editing surface ----------------------------------------------------- */
+
+.editor {
+  outline: none;
+  min-height: 60vh;
+  caret-color: var(--accent);
+}
+
+/* A hint in an empty document, and again on an empty paragraph you are on. */
+.editor > p:only-child:empty::before,
+.editor > p:only-child > br:only-child::before {
+  content: "Start writing…";
+  color: var(--muted);
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+/* Markers for structure that is otherwise invisible while editing. */
+.editor pre { min-height: 3.2em; }
+.editor pre[data-lang]::before {
+  content: attr(data-lang);
+  display: block;
+  margin-bottom: 0.5em;
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* Checkboxes are inert inside a contenteditable unless taken out of it. */
+.editor input[type="checkbox"] { cursor: pointer; }
+
+@media (max-width: 40rem) {
+  .editor { min-height: 50vh; }
+}
+
+/* Embedded HTML is shown verbatim rather than rendered, so it needs to read as
+   markup rather than as prose. */
+.editor .serif-raw {
+  margin: 1.3em 0;
+  font-family: var(--font-mono);
+  font-size: 0.82em;
+  color: var(--muted);
+  white-space: pre-wrap;
+  padding-left: 0.9em;
+  border-left: 2px solid var(--border);
+}
+
+/* ---- File picker, and the box that names a file -------------------------- */
+/* One dialog shape, two questions: which file, and what it should be called.
+   The second is the picker's panel with a different question in it, so the
+   overlay and the panel are shared rather than described twice. */
+
+.picker,
+.prompt {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  justify-content: center;
+  /* flex-start, so the panel is as tall as its results and no taller. */
+  align-items: flex-start;
+  padding: clamp(3rem, 12vh, 9rem) 1rem 1rem;
+  background: color-mix(in srgb, var(--bg) 55%, transparent);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+}
+
+.picker[hidden],
+.prompt[hidden] { display: none; }
+
+.picker-panel,
+.prompt-panel {
+  display: flex;
+  flex-direction: column;
+  width: min(34rem, 100%);
+  max-height: min(26rem, 70vh);
+  border: 1px solid var(--border);
+  border-radius: 0.8em;
+  background: var(--bg);
+  box-shadow: 0 12px 48px color-mix(in srgb, var(--text) 18%, transparent);
+  overflow: hidden;
+}
+
+.picker-input,
+.prompt-input {
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  color: var(--text);
+  background: none;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  padding: 0.85rem 1rem;
+  outline: none;
+}
+
+.picker-input::placeholder { color: var(--muted); }
+
+.picker-list {
+  list-style: none;
+  margin: 0;
+  padding: 0.35rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.picker-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  padding: 0.4rem 0.65rem;
+  border-radius: 0.45em;
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  line-height: 1.5;
+  cursor: pointer;
+}
+
+.picker-row-name {
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* The characters the query matched. */
+.picker-row-name b {
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.picker-row-dir {
+  flex: 1;
+  min-width: 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.picker-row.is-current .picker-row-name { font-weight: 600; }
+.picker-row.is-active { background: var(--surface-2); }
+.picker-row.is-active .picker-row-dir { color: var(--text); }
+
+.picker-empty {
+  margin: 0;
+  padding: 1.2rem 1rem;
+  text-align: center;
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.picker-empty[hidden] { display: none; }
+
+/* The offer to make the file you have just named: "Create" is the quiet half
+   and the name is the loud one, and the label keeps the right-hand column a
+   directory would have used. */
+.picker-row.is-create .picker-row-name { color: var(--muted); }
+
+/* ---- Naming a file ------------------------------------------------------- */
+
+.prompt-panel {
+  max-height: none;
+  padding: 1.1rem 1.2rem 1rem;
+  gap: 0.7rem;
+  /* Chrome, not document: the buttons inherit this rather than the reading face. */
+  font-family: var(--font-sans);
+}
+
+.prompt-title {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.prompt-input {
+  border: 1px solid var(--border);
+  border-radius: 0.45em;
+  padding: 0.5rem 0.65rem;
+  font-size: 0.9rem;
+}
+
+.prompt-input:focus { border-color: color-mix(in srgb, var(--accent) 55%, var(--border)); }
+
+/* What you are about to make, in the face it will be listed in — or, when the
+   name was refused, why. The line is always there, so the box does not jump. */
+.prompt-hint {
+  margin: 0;
+  min-height: 1.2em;
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  line-height: 1.2;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.prompt-hint.is-error { color: var(--accent-strong); }
+
+.prompt-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.prompt-actions .notice-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* ---- Front matter -------------------------------------------------------- */
+/* Metadata, not prose: it sits above the document as a labelled card, in the
+   mono face, quiet enough that the first heading is still the first thing you
+   read. It is editable as plain text and written back between its own fences. */
+
+.editor .serif-front {
+  position: relative;
+  margin: 0.4em 0 2.6em;
+  padding: 1.15em 1.2em 1.05em;
+  border: 1px solid var(--border);
+  border-radius: 0.65em;
+  background: color-mix(in srgb, var(--surface) 65%, transparent);
+  font-family: var(--font-mono);
+  font-size: 0.78em;
+  line-height: 1.7;
+  color: var(--muted);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  tab-size: 2;
+}
+
+/* The label is a pseudo-element on purpose: it must not exist in the DOM, or
+   the serializer would write it into the file. */
+.editor .serif-front::before {
+  content: attr(data-label);
+  position: absolute;
+  top: -0.58em;
+  left: 1em;
+  padding: 0 0.5em;
+  background: var(--bg);
+  font-family: var(--font-sans);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* Keys, marked up when the document loaded. */
+.editor .serif-front b {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.editor .serif-front:focus-within {
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
+}
+
+.editor .serif-front:focus-within::before {
+  color: var(--accent);
+}

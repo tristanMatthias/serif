@@ -29,6 +29,30 @@ var styleCSS string
 //go:embed page.tmpl
 var pageTmplText string
 
+// The theme machinery is shared by every serif surface — the exported page, the
+// browser bundle, and the editor — so it lives in one place and is embedded
+// rather than duplicated per template.
+
+//go:embed theme-init.js
+var themeInitJS string
+
+//go:embed theme-toggle.html
+var themeToggleHTML string
+
+//go:embed theme-toggle.js
+var themeToggleJS string
+
+// ThemeInitJS is the script that picks the theme before first paint, so a page
+// never flashes the wrong one. Inline it in <head>.
+func ThemeInitJS() string { return themeInitJS }
+
+// ThemeToggleHTML is the markup for the light/dark toggle button. It is styled
+// by StyleCSS and driven by ThemeToggleJS.
+func ThemeToggleHTML() string { return themeToggleHTML }
+
+// ThemeToggleJS wires up the toggle button and the "T" shortcut.
+func ThemeToggleJS() string { return themeToggleJS }
+
 // RepoURL is linked from the generated page footer.
 const RepoURL = "https://github.com/tristanMatthias/serif"
 
@@ -54,22 +78,34 @@ type Options struct {
 }
 
 type pageData struct {
-	Title     string
-	Lang      string
-	Style     string
-	ChromaCSS string
-	Body      string
-	Footer    string
+	Title       string
+	Lang        string
+	Style       string
+	ChromaCSS   string
+	Body        string
+	Footer      string
+	ThemeInit   string
+	ThemeToggle string
+	ThemeJS     string
 }
 
 // Page renders Markdown source into a complete, self-contained HTML document.
+//
+// Front matter is metadata, not reading matter, so it is taken off the top
+// rather than typeset. A title declared there names the page when one has not
+// been given on the command line.
 func Page(src []byte, opts Options) (string, error) {
+	front, src, hasFront := SplitFront(src)
+
 	body, err := Markdown(src)
 	if err != nil {
 		return "", err
 	}
 
 	title := opts.Title
+	if title == "" && hasFront {
+		title = front.Title()
+	}
 	if title == "" {
 		title = FirstHeading(src)
 	}
@@ -89,6 +125,10 @@ func Page(src []byte, opts Options) (string, error) {
 		ChromaCSS: syntaxCSS(),
 		Body:      body,
 		Footer:    footer(opts.Source),
+
+		ThemeInit:   themeInitJS,
+		ThemeToggle: themeToggleHTML,
+		ThemeJS:     themeToggleJS,
 	}
 
 	var out bytes.Buffer
