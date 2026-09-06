@@ -98,7 +98,7 @@ export const groups = [
 
       /* ---- editing across files ---- */
       { name: "edits go to the open file and leave the others alone",
-        do: ["press:Meta+\\", "click:#doc", "press:End", "type: edited", "wait:900"],
+        do: ["press:Meta+\\", "click:#doc", "press:End", "type: edited", "settle"],
         fileMatches: { "notes/standup.md": "edited" },
         files: { "index.md": NOTES["index.md"] } },
 
@@ -135,7 +135,7 @@ export const groups = [
         hidden: "#picker", text: { "#doc-name": "ideas.md" }, files: { "ideas.md": "" } },
 
       { name: "and what you type next goes into it",
-        do: ["click:#doc", "type:# Ideas", "wait:1200"],
+        do: ["click:#doc", "type:# Ideas", "settle"],
         files: { "ideas.md": "# Ideas\n", "index.md": "# Index\n\nTop level.\n" } },
 
       { name: "the new file joins the listing",
@@ -227,7 +227,7 @@ export const groups = [
         files: { "first.md": "" }, attr: { "#doc@contenteditable": "true" } },
 
       { name: "and then it is an editor again",
-        do: ["click:#doc", "type:Hello", "wait:1200"], files: { "first.md": "Hello\n" } },
+        do: ["click:#doc", "type:Hello", "settle"], files: { "first.md": "Hello\n" } },
     ],
   },
 

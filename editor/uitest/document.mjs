@@ -9,8 +9,11 @@ const EMPTY = "<p><br></p>";
 const typing = (name, keys, file, dom) => ({
   name: `typing: ${name}`,
   html: EMPTY, sel: "p",
-  do: keys,
-  pause: 700,
+  // The expectation is what landed on disk, so wait for the save rather than
+  // for a length of time. A fixed pause raced the debounce on a slower machine
+  // and read back the *previous* case's file, which fails somewhere else.
+  do: [...keys, "settle"],
+  pause: 120,
   file, dom,
 });
 
@@ -109,8 +112,8 @@ export const groups = [
     name: "saving and syncing",
     files: { "n.md": "# Start\n" },
     cases: [
-      { name: "edits reach the disk within a second",
-        do: ["click:#doc", "press:End", "type:ed", "wait:900"],
+      { name: "edits reach the disk without being asked to",
+        do: ["click:#doc", "press:End", "type:ed", "settle"],
         file: "# Started\n" },
 
       { name: "the bar says when it last saved",
@@ -129,7 +132,7 @@ export const groups = [
         visible: "#notice", file: "# Theirs\n" },
 
       { name: "keeping yours overwrites",
-        do: ["click:#notice-primary", "wait:900"],
+        do: ["click:#notice-primary", "settle"],
         fileMatches: { "n.md": "MINE" } },
 
       { name: "reformatting is announced before it happens",
