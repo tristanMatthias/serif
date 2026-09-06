@@ -7,17 +7,7 @@
 <meta name="generator" content="serif">
 <title>{{.Title}}</title>
 <script>
-/* Set theme before first paint to avoid a flash. */
-(function () {
-  try {
-    var t = localStorage.getItem("serif-theme");
-    if (t !== "light" && t !== "dark") {
-      t = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-    }
-    document.documentElement.setAttribute("data-theme", t);
-  } catch (e) {}
-})();
-</script>
+{{.ThemeInit}}</script>
 <style>
 {{.Style}}
 
@@ -26,18 +16,7 @@
 </style>
 </head>
 <body>
-<button id="theme-toggle" class="theme-toggle" type="button"
-        aria-label="Toggle light and dark theme" title="Toggle light / dark (T)">
-  <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-       stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-  </svg>
-  <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-       stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-    <circle cx="12" cy="12" r="4.2"></circle>
-    <path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8"></path>
-  </svg>
-</button>
+{{.ThemeToggle}}
 
 <main class="page">
   <article class="prose">
@@ -47,28 +26,8 @@
 </main>
 
 <script>
+{{.ThemeJS}}
 (function () {
-  var root = document.documentElement;
-
-  function setTheme(t) {
-    root.setAttribute("data-theme", t);
-    try { localStorage.setItem("serif-theme", t); } catch (e) {}
-  }
-
-  var btn = document.getElementById("theme-toggle");
-  if (btn) {
-    btn.addEventListener("click", function () {
-      setTheme(root.getAttribute("data-theme") === "dark" ? "light" : "dark");
-    });
-  }
-
-  document.addEventListener("keydown", function (e) {
-    if (e.key === "t" && !e.metaKey && !e.ctrlKey && !e.altKey &&
-        !/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName)) {
-      setTheme(root.getAttribute("data-theme") === "dark" ? "light" : "dark");
-    }
-  });
-
   /* Add clickable anchors to headings that have ids. */
   document.querySelectorAll(".prose h2[id], .prose h3[id], .prose h4[id]").forEach(function (h) {
     var a = document.createElement("a");

@@ -8,6 +8,7 @@ import (
 func TestDeriveOutPath(t *testing.T) {
 	cases := map[string]string{
 		"thing.md":        "thing.html",
+		"post.mdx":        "post.html",
 		"a/b/notes.md":    "a/b/notes.html",
 		"README.markdown": "README.html",
 		"doc.mkd":         "doc.html",

@@ -6,6 +6,8 @@
 //	serif thing.md            # writes thing.html
 //	serif thing.md -o out.html
 //	serif --title "My Doc" thing.md
+//	serif edit thing.md       # edit it in the browser, saving as you type
+//	serif edit ./notes        # …or a whole directory of them
 package main
 
 import (
@@ -15,6 +17,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/tristanMatthias/serif/editor"
 	"github.com/tristanMatthias/serif/render"
 )
 
@@ -29,6 +32,12 @@ func main() {
 }
 
 func run() error {
+	// `edit` is a subcommand with its own flags; everything else is the
+	// original single-file conversion.
+	if len(os.Args) > 1 && os.Args[1] == "edit" {
+		return runEdit(os.Args[2:])
+	}
+
 	var (
 		outPath     string
 		titleFlag   string
@@ -83,12 +92,35 @@ func run() error {
 	return nil
 }
 
+// runEdit serves the browser editor for a Markdown file or a directory of them,
+// saving to disk as you type.
+func runEdit(args []string) error {
+	fs := flag.NewFlagSet("serif edit", flag.ExitOnError)
+	addr := fs.String("addr", editor.DefaultAddr,
+		"address to listen on; a bare port or host is filled in (use 0.0.0.0 to allow Tailscale/LAN)")
+	open := fs.Bool("open", false, "open the editor in your browser")
+	fs.Usage = editUsage
+	fs.Parse(reorderArgs(args))
+
+	if fs.NArg() != 1 {
+		editUsage()
+		return fmt.Errorf("expected exactly one Markdown file or directory to edit")
+	}
+
+	srv, err := editor.New(fs.Arg(0))
+	if err != nil {
+		return err
+	}
+	return editor.Serve(srv, *addr, *open, os.Stdout)
+}
+
 // reorderArgs moves flags ahead of positional arguments so that Go's flag
 // package (which stops at the first non-flag token) accepts flags placed after
 // the file, e.g. `serif thing.md -o out.html`.
 func reorderArgs(args []string) []string {
 	valueFlags := map[string]bool{
 		"-o": true, "-title": true, "--title": true, "-lang": true, "--lang": true,
+		"-addr": true, "--addr": true,
 	}
 	var flags, positionals []string
 	for i := 0; i < len(args); i++ {
@@ -113,7 +145,7 @@ func reorderArgs(args []string) []string {
 func deriveOutPath(inPath string) string {
 	ext := filepath.Ext(inPath)
 	switch strings.ToLower(ext) {
-	case ".md", ".markdown", ".mdown", ".mkd", ".mkdn", ".text", ".txt":
+	case ".md", ".mdx", ".markdown", ".mdown", ".mkd", ".mkdn", ".text", ".txt":
 		return strings.TrimSuffix(inPath, ext) + ".html"
 	default:
 		return inPath + ".html"
@@ -132,6 +164,7 @@ func usage() {
 
 Usage:
   serif [options] <file.md>
+  serif edit [options] <file.md|dir>
 
 Options:
   -o <file>       output path (default: input name with .html)
@@ -142,6 +175,36 @@ Options:
 Examples:
   serif notes.md                 # writes notes.html
   serif README.md -o docs/index.html
+  serif edit notes.md            # edit in the browser, saving as you type
+  serif edit ./notes             # browse and edit a directory
+
+Run "serif edit --help" for the editor's options.
+
+Home: https://github.com/tristanMatthias/serif
+`)
+}
+
+func editUsage() {
+	fmt.Fprint(os.Stderr, `serif edit — edit Markdown in the browser, saving as you type
+
+Usage:
+  serif edit [options] <file.md|dir>
+
+Given a file, that file is edited. Given a directory, its Markdown files are
+browsable from the title bar (or press Ctrl-P / Cmd-P), and files can be made
+and renamed from inside the editor.
+
+Options:
+  --addr <addr>   address to listen on (default: `+editor.DefaultAddr+`)
+                  accepts "8080", "0.0.0.0", or "0.0.0.0:8080"
+  --open          open the editor in your browser
+
+Examples:
+  serif edit notes.md
+  serif edit ~/notes                    # browse a whole directory
+  serif edit notes.md --addr 0.0.0.0    # reachable over Tailscale or a LAN
+  serif edit new.md                     # creates the file if it does not exist
+  serif edit ~/new-notebook             # an empty folder, ready for its first file
 
 Home: https://github.com/tristanMatthias/serif
 `)
