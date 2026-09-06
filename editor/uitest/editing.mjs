@@ -140,7 +140,7 @@ export const cases = [
 
   { name: "replacing the whole document leaves one clean block",
     html: "<h1>a</h1><p>b</p><ul><li>c</li></ul>", sel: "h1",
-    do: ["press:Meta+a", "type:fresh"], dom: "^<(h1|p)>fresh</(h1|p)>$" },
+    do: ["press:ControlOrMeta+a", "type:fresh"], dom: "^<(h1|p)>fresh</(h1|p)>$" },
 
   // Typing with the caret stranded in the editor itself rather than in a block:
   // each character used to be wrapped into a paragraph of its own, so a word
@@ -205,7 +205,7 @@ export const cases = [
 
   { name: "a rendered code block has no phantom blank last line",
     html: "<p>x</p>", sel: "p",
-    do: ["press:Meta+a", "type:```go", "press:Enter", "type:code", "wait:200"],
+    do: ["press:ControlOrMeta+a", "type:```go", "press:Enter", "type:code", "wait:200"],
     md: "```go\ncode\n```\n" },
 
   { name: "Cmd-Shift-X strikes text through",

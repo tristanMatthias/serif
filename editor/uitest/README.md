@@ -73,6 +73,12 @@ A suite exports `files` (the workspace to open) and `cases`, or a list of
 | `settle`               | Wait until the editor reports itself saved |
 | `wait:<ms>`            | A plain pause, when nothing better will do |
 
+`Meta+` is right for the editor's own shortcuts — its handlers accept either
+modifier, so a case written with ⌘ runs on Linux CI too. A gesture the *browser*
+owns is different: select-all is ⌘A on a Mac and Ctrl-A everywhere else, so it
+needs `press:ControlOrMeta+a`, which Playwright resolves per platform. Getting
+this wrong fails only on CI.
+
 ### Expectations
 
 Give whichever the case is actually about; the rest are skipped.
